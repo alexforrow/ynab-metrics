@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"go.bmvs.io/ynab"
-	"go.bmvs.io/ynab/api/budget"
+	"github.com/brunomvsouza/ynab.go"
+	"github.com/brunomvsouza/ynab.go/api/budget"
 )
 
 //GetBudgets returns the list of budgets associated with user token
@@ -13,7 +13,7 @@ func GetBudgets(c ynab.ClientServicer) []*budget.Budget {
 	log.Print("Getting Budgets...")
 	budgetSummaries, err := c.Budget().GetBudgets()
 	if err != nil {
-		log.Fatal("Unable to get budgets, check your access token")
+		log.Fatal(fmt.Sprintf("Unable to get budgets, error %s",err))
 	}
 
 	var budgets []*budget.Budget

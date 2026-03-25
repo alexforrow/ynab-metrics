@@ -6,8 +6,8 @@ import (
 	u "github.com/hoenn/ynab-metrics/pkg/units"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"go.bmvs.io/ynab"
-	"go.bmvs.io/ynab/api/budget"
+	"github.com/brunomvsouza/ynab.go"
+	"github.com/brunomvsouza/ynab.go/api/budget"
 )
 
 var categoryBudgeted = prometheus.NewGaugeVec(prometheus.GaugeOpts{
