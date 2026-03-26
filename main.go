@@ -37,10 +37,11 @@ func main() {
 				transactions.StartMetrics(c, budgets)
 			}
 
+			log.Print("Done. Waiting for next cycle...")
 			time.Sleep(time.Duration(cfg.IntervalSeconds) * time.Second)
 		}
 	}()
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
+	log.Fatal(http.ListenAndServe(cfg.Addr, nil))
 }

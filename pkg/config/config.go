@@ -27,7 +27,7 @@ func ParseConfig(cfgFile string) *Config {
 
 //Config represents the configuration for the exporter
 type Config struct {
-	Port            string `json:"port"`
+	Addr            string `json:"addr"`
 	GetTrans        bool   `json:"include_transactions"`
 	AccessToken     string `json:"access_token"`
 	IntervalSeconds uint64 `json:"interval_seconds"`
