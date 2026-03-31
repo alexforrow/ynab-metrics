@@ -3,6 +3,7 @@ package accounts
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	u "github.com/hoenn/ynab-metrics/pkg/units"
@@ -17,7 +18,7 @@ var accountBalance = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "account_balance",
 	Help: "Account balance gauge",
 },
-	[]string{"budget_name", "name"})
+	[]string{"budget_name", "name", "type", "closed"})
 
 var attentionTransactions = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "attention_transactions",
@@ -46,14 +47,14 @@ func StartMetrics(c ynab.ClientServicer, budgets []*budget.Budget) {
 
 	for _, b := range budgets {
 		for _, a := range b.Accounts {
-			// skip unused accounts
+			// output balance
+			accountBalance.WithLabelValues(b.Name, a.Name, string(a.Type), strconv.FormatBool(a.Closed)).Set(float64(u.Dollars(a.Balance)))
+
+			// dont do anything else for unused accounts
 			if a.Closed || a.Deleted {
 				log.Print(fmt.Sprintf("Skipping account %s/%s as its closed or deleted", b.Name, a.Name))
 				continue
 			}
-
-			// output balance
-			accountBalance.WithLabelValues(b.Name, a.Name).Set(float64(u.Dollars(a.Balance)))
 
 			// for each account count number of transactions needing attention (unapproved or uncategorised)
 			startDate, _ := api.DateFromString(startDateStr)
