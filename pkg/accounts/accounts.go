@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"time"
 
-	u "github.com/hoenn/ynab-metrics/pkg/units"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/brunomvsouza/ynab.go"
+	"github.com/brunomvsouza/ynab.go/api"
 	"github.com/brunomvsouza/ynab.go/api/budget"
 	"github.com/brunomvsouza/ynab.go/api/transaction"
-	"github.com/brunomvsouza/ynab.go/api"
+	u "github.com/hoenn/ynab-metrics/pkg/units"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var accountBalance = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -31,17 +31,17 @@ func init() {
 	prometheus.MustRegister(attentionTransactions)
 }
 
-//StartMetrics collects accounts metrics given a list of budgets
+// StartMetrics collects accounts metrics given a list of budgets
 func StartMetrics(c ynab.ClientServicer, budgets []*budget.Budget) {
 	log.Println("Getting Accounts...")
 
 	statuses := map[string]*transaction.Status{
 		"uncategorized": transaction.StatusUncategorized.Pointer(),
-		"unapproved": transaction.StatusUnapproved.Pointer(),
+		"unapproved":    transaction.StatusUnapproved.Pointer(),
 	}
 
 	// limit transactions to X months ago
-	startDate := time.Now().AddDate(0, -1 ,0)
+	startDate := time.Now().AddDate(0, -2, 0)
 	startDateStr := startDate.Format(time.DateOnly)
 	log.Print(fmt.Sprintf("Start date is: %s", startDateStr))
 
@@ -73,7 +73,15 @@ func StartMetrics(c ynab.ClientServicer, budgets []*budget.Budget) {
 					continue
 				}
 
-				attentionTransactions.WithLabelValues(b.Name, a.Name, status).Set(float64(len(transactions)))
+				count := 0
+				for _, t := range transactions {
+					// when counting uncategorized, skip transactions you can't categorize (between accounts or account closure transactions)
+					if status == "unapproved" || t.TransferAccountID == nil && (t.Memo == nil || *t.Memo != "Closed Account") {
+						count++
+					}
+				}
+
+				attentionTransactions.WithLabelValues(b.Name, a.Name, status).Set(float64(count))
 			}
 		}
 	}
